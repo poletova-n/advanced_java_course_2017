@@ -1,5 +1,7 @@
 package edu.technopolis;
 
+import homework_1.FibonacciNumbers;
+
 /**
  * Это просто точка входа для первого домашнего задания.
  * Содержит только метод main и ничего кроме. Никакой дполнительной нагрузки не несёт.
@@ -11,7 +13,7 @@ package edu.technopolis;
  */
 public interface EntryPoint {
     static void main(String... args) {
-        FibonacciAlgorithm algorithm = new FibonacciNumber();
+        FibonacciNumbers algorithm = new FibonacciNumbers();
         System.out.println(algorithm.evaluate(Integer.parseInt(args[0])));
     }
 }
