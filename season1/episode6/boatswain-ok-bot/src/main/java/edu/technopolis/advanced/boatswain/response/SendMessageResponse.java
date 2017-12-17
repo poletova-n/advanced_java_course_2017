@@ -3,8 +3,8 @@ package edu.technopolis.advanced.boatswain.response;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 public class SendMessageResponse extends Response {
-    String recipientId;
-    String messageId;
+    private String recipientId;
+    private String messageId;
 
     public String getRecipientId() {
         return recipientId;

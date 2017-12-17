@@ -38,7 +38,6 @@ class ApiClient implements Closeable {
 
         client = HttpClients.custom()
                 .setDefaultHeaders(Arrays.asList(
-                        new BasicHeader("Host", apiHost),
                         new BasicHeader("Agent", "boatswain-bot"),
                         new BasicHeader("Accept", "*/*")
                         )

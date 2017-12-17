@@ -1,7 +1,7 @@
 package edu.technopolis.advanced.boatswain.response;
 
 public class SubscribeResponse extends Response {
-    boolean success;
+    private boolean success;
 
     public boolean isSuccess() {
         return success;

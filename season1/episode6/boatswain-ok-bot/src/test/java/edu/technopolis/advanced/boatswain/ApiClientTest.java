@@ -14,7 +14,6 @@ import edu.technopolis.advanced.boatswain.request.SendMessageRequest;
 import edu.technopolis.advanced.boatswain.request.SendRecipient;
 import edu.technopolis.advanced.boatswain.request.SubscribePayload;
 import edu.technopolis.advanced.boatswain.request.SubscribeRequest;
-import edu.technopolis.advanced.boatswain.response.CurrencyResponse;
 import edu.technopolis.advanced.boatswain.response.GetSubscriptionsResponse;
 import edu.technopolis.advanced.boatswain.response.SendMessageResponse;
 import edu.technopolis.advanced.boatswain.response.SubscribeResponse;
@@ -57,13 +56,7 @@ public class ApiClientTest {
         TestCase.assertNotNull(status);
     }
 
-    @Test
-    public void testCurrency() throws IOException {
-        ApiClient currencyClient = new ApiClient("http", "api.fixer.io", null);
-        CurrencyResponse usd = currencyClient.get(new CurrencyRequest("USD"), CurrencyResponse.class);
-        Assert.assertNotNull(usd.getRates());
-        Assert.assertNotNull(usd.getRates().get("RUB"));
-    }
+
 
     @AfterClass
     public static void closeClient() throws IOException {

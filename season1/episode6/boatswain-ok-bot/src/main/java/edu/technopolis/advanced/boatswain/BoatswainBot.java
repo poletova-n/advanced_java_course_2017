@@ -3,19 +3,21 @@ package edu.technopolis.advanced.boatswain;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
-
+import java.net.URLEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.technopolis.advanced.boatswain.incoming.request.Message;
 import edu.technopolis.advanced.boatswain.incoming.request.MessageNotification;
 import edu.technopolis.advanced.boatswain.request.GetSubscriptionsRequest;
+import edu.technopolis.advanced.boatswain.request.SearchRequest;
 import edu.technopolis.advanced.boatswain.request.SendMessagePayload;
 import edu.technopolis.advanced.boatswain.request.SendMessageRequest;
 import edu.technopolis.advanced.boatswain.request.SendRecipient;
 import edu.technopolis.advanced.boatswain.request.SubscribePayload;
 import edu.technopolis.advanced.boatswain.request.SubscribeRequest;
 import edu.technopolis.advanced.boatswain.response.GetSubscriptionsResponse;
+import edu.technopolis.advanced.boatswain.response.SearchResponse;
 import edu.technopolis.advanced.boatswain.response.SendMessageResponse;
 import edu.technopolis.advanced.boatswain.response.SubscribeResponse;
 import edu.technopolis.advanced.boatswain.response.Subscription;
@@ -80,7 +82,7 @@ public class BoatswainBot {
 
     private static void subscribe(ApiClient client, Properties props, String botEndpoint) throws IOException {
         SubscribeRequest req = new SubscribeRequest(props.getProperty("ok.api.endpoint.subscribe"),
-                new SubscribePayload(botEndpoint, props.getProperty("bot.phrase")));
+                new SubscribePayload(botEndpoint));
         SubscribeResponse post = client.post(req, SubscribeResponse.class);
         if (!post.isSuccess()) {
             throw new IllegalStateException("Failed to subscribe bot to messages");
@@ -123,41 +125,56 @@ public class BoatswainBot {
     private static class MessageSender {
 
         private final ApiClient client;
-        private final String phrase;
-        private final String joke;
         private final String sendEndpoint;
+        ApiClient lurkClient;
+        private final String lurkEndPoint;
+        String lurkHost;
 
         MessageSender(ApiClient okClient, Properties props) {
             this.client = okClient;
-            this.phrase = props.getProperty("bot.phrase");
-            this.joke = props.getProperty("bot.joke");
             this.sendEndpoint = props.getProperty("ok.api.endpoint.send");
+            this.lurkEndPoint = props.getProperty("lurk.endpoint.search");
+            this.lurkHost = props.getProperty("lurk.host");
+
+            lurkClient=new ApiClient("https",
+                    lurkEndPoint,null);
         }
 
         boolean send(MessageNotification notif) {
-            if (notif == null || notif.getMessage() == null || notif.getMessage().getText() == null) {
-                log.info("Message notification contains no text <{}>", notif);
-                return true;
-            }
-            if (!notif.getMessage().getText().startsWith(phrase)) {
-                log.info("Message notification does not contain phrase <{}>", notif);
-                return true;
-            }
-            if (notif.getRecipient() == null || notif.getRecipient().getChatId() == null) {
-                log.warn("Message notification does not contain chat id <{}>", notif);
-                return false;
-            }
-            SendMessageRequest req = new SendMessageRequest(sendEndpoint, notif.getRecipient().getChatId())
-                    .setPayload(
-                            new SendMessagePayload(
-                                    new SendRecipient(notif.getSender().getUserId()),
-                                    new Message(joke)
-                            )
-                    );
-            try {
-                return client.post(req, SendMessageResponse.class).getMessageId() != null;
-            } catch (IOException e) {
-                log.error("Failed to send message", e);
+
+
+            try
+            {
+                SearchRequest searchRequest = new SearchRequest(
+                        URLEncoder.encode(notif.getMessage().getText(), "UTF-8"));
+               SearchResponse searchResponse = lurkClient.get(searchRequest, SearchResponse.class);
+               StringBuilder ans = new StringBuilder();
+
+               for (int i=0; i< searchResponse.getQuery().getSearch().size(); i++)
+                {
+                    ans.append("(" + searchResponse.getQuery().getSearch().get(i).getTitle() + ") "
+                            + lurkHost +  URLEncoder.encode(searchResponse.getQuery().getSearch().get(i).getTitle(),
+                            "UTF-8") + "\n");
+                }
+
+                SendMessageRequest req = new SendMessageRequest(sendEndpoint, notif.getRecipient().getChatId())
+                        .setPayload(
+                                new SendMessagePayload(
+                                        new SendRecipient(notif.getSender().getUserId()),
+                                        new Message(ans.toString())
+                                )
+                        );
+
+                try {
+                    return client.post(req, SendMessageResponse.class).getMessageId() != null;
+                } catch (IOException e) {
+                    log.error("Failed to send message", e);
+                    return false;
+                }
+
+            } catch (IOException e)
+            {
+                log.error("error lurk get");
                 return false;
             }
         }

@@ -6,8 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 public class SendRecipient {
     private String userId;
 
-    public SendRecipient() {
-    }
+    public SendRecipient() { }
 
     public SendRecipient(String userId) {
         this.userId = userId;
