@@ -150,12 +150,15 @@ public class BoatswainBot {
                SearchResponse searchResponse = lurkClient.get(searchRequest, SearchResponse.class);
                StringBuilder ans = new StringBuilder();
 
-               for (int i=0; i< searchResponse.getQuery().getSearch().size(); i++)
-                {
-                    ans.append("(" + searchResponse.getQuery().getSearch().get(i).getTitle() + ") "
-                            + lurkHost +  URLEncoder.encode(searchResponse.getQuery().getSearch().get(i).getTitle(),
-                            "UTF-8") + "\n");
-                }
+               if(searchResponse.getQuery().getSearch().size()==0){
+                   ans.append("We were unable to find anything at your request :(\n");
+               }else {
+                   for (int i = 0; i < searchResponse.getQuery().getSearch().size(); i++) {
+                       ans.append("(" + searchResponse.getQuery().getSearch().get(i).getTitle() + ") "
+                               + lurkHost + URLEncoder.encode(searchResponse.getQuery().getSearch().get(i).getTitle(),
+                               "UTF-8") + "\n");
+                   }
+               }
 
                 SendMessageRequest req = new SendMessageRequest(sendEndpoint, notif.getRecipient().getChatId())
                         .setPayload(
